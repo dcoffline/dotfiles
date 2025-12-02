@@ -1,6 +1,6 @@
 # ~/.zshrc — The One True Config (Bazzite 2025 edition)
 export ZDOTDIR="$HOME/.config/zsh"
-export ZSH="$ZDOTDIR/oh-my-zsh"
+export ZSH="$ZDOTDIR/.oh-my-zsh"
 ZSH_CUSTOM="$ZSH/custom"
 ZSH_CACHE_DIR="$ZDOTDIR/cache"
 plugins=(themes web-search command-not-found copybuffer colored-man-pages)
