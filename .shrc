@@ -58,10 +58,10 @@ alias archup='distrobox enter arch -- sudo sh -c "rm -f /var/lib/pacman/db.lck &
 # Editor
 alias ebrc='$EDITOR ~/.bashrc'
 alias sbrc='source ~/.bashrc'
-alias ezrc='$EDITOR ~/.zshrc'
-alias szrc='source ~/.zshrc'
-alias ecrc='$EDITOR ~/.commonrc'
-alias scrc='source ~/.commonrc'
+alias ezrc='$EDITOR $ZDOTDIR/.zshrc'
+alias szrc='source $ZDOTDIR/.zshrc'
+alias esrc='$EDITOR $ZDOTDIR/.shrc'
+alias ssrc='source $ZDOTDIR/.shrc'
 alias vi=$EDITOR
 alias vim=$EDITOR
 alias nano=$EDITOR

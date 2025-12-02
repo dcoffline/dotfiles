@@ -2,7 +2,7 @@
 git clone https://github.com/dcoffline/dotfiles.git "$HOME/.config/zsh"
 
 # 2. Create the tiny bootstrapper in your real home (this is the ONLY file that lives in ~)
-cat > "$HOME/.zshenv" << 'EOF'
+cat > "$HOME/.zshrc" << 'EOF'
 # Bootstrapper — loads the real config from ~/.config/zsh
 export ZDOTDIR="${ZDOTDIR:-$HOME/.config/zsh}"
 [[ -f "$ZDOTDIR/.zshrc" ]] && source "$ZDOTDIR/.zshrc"
