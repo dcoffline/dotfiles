@@ -25,7 +25,7 @@ command -v stow >/dev/null 2>&1 || brew install stow
 # -t ~ sets the target to home
 # -d sets the source to your repo
 stow -v -t "$HOME" -d "$DOTFILES_DIR" config
-ln -s $DOTFILES_DIR/system/cloudflared.service /etc/systemd/system
-ln -s $DOTFILES_DIR/system/rclone-mounts.service /etc/systemd/system
+cp $DOTFILES_DIR/system/cloudflared.service /etc/systemd/system
+cp $DOTFILES_DIR/system/rclone-mounts.service /etc/systemd/system
 
 echo "Fortress installation complete. Reload your shell to see changes."
