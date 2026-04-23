@@ -1,0 +1,8 @@
+# 1. Define Monitors
+export MAIN="DP-1"
+export DUMMY="HDMI-A-1"
+
+# 2. Manual fallbacks for Sunshine context
+export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
+export WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-wayland-0}
+

@@ -1,0 +1,16 @@
+[Unit]
+Description=Monitor Idle Control (Swayidle)
+# Wait until the graphical session is actually up
+After=graphical-session.target
+
+[Service]
+Type=simple
+#EnvironmentFile=-%h/.config/zsh/.monitors
+ExecStart=/bin/bash %h/.local/bin/monitor-control
+Restart=always
+RestartSec=5
+# Ensure the service can talk to the Wayland socket
+PassEnvironment=WAYLAND_DISPLAY XDG_RUNTIME_DIR XDG_CURRENT_DESKTOP
+
+[Install]
+WantedBy=default.target

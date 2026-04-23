@@ -1,0 +1,21 @@
+#!/bin/bash
+sudo -v
+# Define repo path
+DOTFILES_DIR="$HOME/src/github.com/dcoffline/dotfiles"
+
+# 1. Sync the Brewfile
+echo "Syncing Brewfile to repository..."
+cd "$DOTFILES_DIR" && brew bundle dump --force
+
+# 2. Add and Commit the changes (Optional but Pro)
+# This way your 'Fortress' tracks exactly when you added new tools
+git add Brewfile
+git commit -m "Auto-update Brewfile before system update: $(date +'%Y-%m-%d')"
+git push origin main
+
+# 3. Update cloudflared
+cloudflared update
+
+# 4. Run the System Update
+echo "Starting Bazzite System Update..."
+ujust update

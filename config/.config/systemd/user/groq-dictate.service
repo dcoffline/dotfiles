@@ -1,0 +1,13 @@
+[Unit]
+Description=Groq AI Dictation
+After=graphical-session.target sound.target
+
+[Service]
+ExecStart=%h/.local/bin/start-groq
+Restart=on-failure
+RestartSec=5
+# Ensure it can see the screen for Notifications
+PassEnvironment=WAYLAND_DISPLAY XDG_RUNTIME_DIR
+
+[Install]
+WantedBy=graphical-session.target

@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# List of mount points
+MOUNTPOINTS=(
+  /var/mnt/Volumes/AllDebrid
+  /var/mnt/Volumes/Archive
+  /var/mnt/Volumes/GDrive
+  /var/mnt/Volumes/OneDrive
+  /var/mnt/Volumes/RealDebrid
+  /var/mnt/Volumes/Timeline
+)
+
+# Use `set -e` to make the script fail immediately if a command fails
+set -e
+
+# First, attempt to kill the rclone processes and then lazy unmount
+for mountpoint in "${MOUNTPOINTS[@]}"; do
+  remote=$(basename "$mountpoint" | tr '[:upper:]' '[:lower:]')
+  pid_file="/home/eric/.config/rclone/pid/${remote}.pid"
+
+  if [ -f "$pid_file" ]; then
+    pid=$(cat "$pid_file")
+    if ps -p "$pid" >/dev/null; then
+      echo "Killing rclone process $pid for $mountpoint"
+      kill "$pid" || echo "Failed to kill rclone process $pid, proceeding anyway..." >&2
+    fi
+    rm -f "$pid_file"
+  fi
+  # Give the process a moment to exit before trying to unmount
+  sleep 1
+
+  # Now, try a lazy unmount, which is safer for FUSE filesystems
+  if mountpoint -q "$mountpoint"; then
+    echo "Attempting lazy unmount for $mountpoint"
+    fusermount -uz "$mountpoint" || echo "Failed to lazy unmount $mountpoint" >&2
+  fi
+done
+
+# Finally, unmount the external drive itself
+#echo "Attempting to unmount the external drive /dev/sda1"
+#udisksctl unmount -b /dev/sda1

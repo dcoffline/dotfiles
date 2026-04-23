@@ -1,6 +1,7 @@
 # ────── EXPORTS (all exported for bash compatibility) ──────
 export LANG=en_US.UTF-8 LC_CTYPE=$LANG LC_COLLATE=$LANG
-export HISTFILE="$ZDOTDIR/.histfile" 
+export ZDOTDIR="${ZDOTDIR:-$HOME/src/github.com/dcoffline/dotfiles/zsh}"
+export HISTFILE="$ZDOTDIR/.histfile"
 export HISTSIZE=10000 SAVEHIST=10000 HISTTIMEFORMAT="%F %T"
 
 export XDG_DATA_HOME="$HOME/.local/share" 
@@ -8,26 +9,21 @@ export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_STATE_HOME="$HOME/.local/state" 
 export XDG_CACHE_HOME="$HOME/.cache"
 
-export EDITOR=nvim
-export PATH="$HOME/.local/bin:/var/lib/flatpak/exports/bin:$HOME/.cargo/bin:$PATH"
+# Fix for Ptyxis/VTE terminal color query leaks
+[[ $TERM == "xterm-256color" ]] && export TERM="vte-256color"
 
-# linuxbrew
-export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
-
-# ────── SHORTCUTS ──────
-export gdrive=/var/mnt/2T/Mounts/GDrive
-export media=/var/mnt/2T/Mounts/Media
-export t2=/var/mnt/2T
-export t10=/var/mnt/10T
+# Fastfetch on Terminal Launch
+#[ "$(command -v fastfetch)" ] && eval "fastfetch" && echo
 
 # ────── ALIASES ──────
 # Rclone Management
-alias rmount='~/.config/rclone/rclone-mount.sh'
-alias rremount='rumount; sleep 2; rmount'
+alias rmount='~/.local/bin/rclone-mount'
+alias rremount='rumount; sleep 3; rmount'
 alias rlsmount='mount | grep rclone || echo "No rclone mounts active"'
+alias rlog='cat ~/.config/rclone/rclone-mount.log --tail 20'
 
-#File Management
-#alias cat=bat 
+# File Management
+alias cat=bat
 alias cp='cp -i' 
 alias mv='mv -i' 
 alias rm='trash -v' 
@@ -38,24 +34,48 @@ alias ....='cd ../../..'
 alias da='date "+%Y-%m-%d %A %T %Z"'
 alias h='history | grep'
 alias p='ps aux | grep'
-alias yey=paru
+
+# Podman Tools
+alias d2q='podlet generate container podman run'
+alias caddyload='podman exec -w /etc/caddy caddy caddy fmt --overwrite && podman exec -w /etc/caddy caddy caddy reload'
+alias podip="podman inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'"
+# Display Tools
+alias dpon=/home/eric/.local/bin/dp-enable
+alias dpoff=/home/eric/.local/bin/dp-disable
+alias mc=/home/eric/.local/bin/monitor-control
 
 # System Utilities
 alias ff=fastfetch
+alias sc=systemctl
 alias j=jotta-cli
 alias cid='echo $CONTAINER_ID'
 alias linutil='curl -fsSL https://christitus.com/linux | sh'
+alias groq='~/.local/bin/start-groq'
+alias groqlog='cat ~/Applications/Groq/groq_debug.log'
+alias yey=paru
+alias cr=cosmic-randr
+alias gd=gdctl
+alias ptrans='dconf write /org/gnome/Ptyxis/Profiles/bfde673bc33862b64b52c32769dc0bb5/opacity'
+alias susc='sudo systemctl'
+alias scu='systemctl --user'
+alias scudr='systemctl --user daemon-reload'
+
+# Get the error messages from journalctl
+alias jc="journalctl"
+
+# Recent installed packages
+alias rip="expac --timefmt='%Y-%m-%d %T' '%l\t%n %v' | sort | tail -200 | nl"
 
 # Distrobox
-alias dea='distrobox enter arch'
+alias dea='distrobox enter arch -- /bin/zsh'
 alias dear='distrobox enter arch -e'
-alias def='distrobox enter fedora'
+alias def='distrobox enter fedora -- /bin/zsh'
 alias defr='distrobox enter fedora -e'
 alias dex='distrobox-export --app'
 alias deb='distrobox-export --export-path ~/.local/bin --bin'
-alias archup='distrobox enter arch -- sudo sh -c "rm -f /var/lib/pacman/db.lck && pacman -Syu --noconfirm"'
 
 # Editor
+export EDITOR=nvim
 alias ebrc='$EDITOR ~/.bashrc'
 alias sbrc='source ~/.bashrc'
 alias ezrc='$EDITOR $ZDOTDIR/.zshrc'
@@ -63,14 +83,9 @@ alias szrc='source $ZDOTDIR/.zshrc'
 alias esrc='$EDITOR $ZDOTDIR/.shrc'
 alias ssrc='source $ZDOTDIR/.shrc'
 alias vi=$EDITOR
-alias vim=$EDITOR
 alias nano=$EDITOR
-alias micro=$EDITOR
 alias svi='sudo $EDITOR'
-alias svim='sudo $EDITOR'
-alias snano='sudo $EDITOR'
-
-# Override OMZ defaults to use eza everywhere
+alias gte=gnome-text-editor
 
 # Aliases from bling.sh (eza and ugrep)
 if [ "$(command -v eza)" ]; then
@@ -92,24 +107,26 @@ if [ "$(command -v ug)" ]; then
     alias xzfgrep='ug -zF'
 fi
 
+
 # ────── FUNCTIONS ──────
+
 # Yazi Shell Wrapper
 y() {
   local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
   yazi "$@" --cwd-file="$tmp"
   local cwd="$(cat "$tmp")"
   [ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
-  rm -f -- "$tmp"
+  \rm -f -- "$tmp"
 }
 
-# Nuke all rclone mounts (the nuclear one-liner we built)
+# Nuke all rclone mounts (the nuclear one-liner)
 rumount() {
   echo "🔪 Slaughtering all rclone mounts..."
   pkill -f "rclone mount" && echo "✅ Processes terminated"
   rm -f ~/.config/rclone/pid/*.pid 2>/dev/null && echo "✅ PID files vaporized"
   sleep 0.5
-  fusermount -uz /var/mnt/2T/Mounts/* 2>/dev/null || true
-  echo "🧹 All mounts detached — 2T drive is now safe to yank"
+  fusermount -uz /var/mnt/Volumes/* 2>/dev/null || true
+  echo "🧹 All remote mounts detached"
   # You could even add a call to rlsmount here
   rlsmount
   sudo fuser -km /dev/sda1 2>/dev/null || true

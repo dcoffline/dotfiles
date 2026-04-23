@@ -1,48 +1,22 @@
 # ~/.zshrc — The One True Config (Bazzite 2025 edition)
-export ZDOTDIR="$HOME/.config/zsh"
-export ZSH="$ZDOTDIR/.oh-my-zsh"
+
+# Shell Exports
+ZSH="$HOME/.config/ohmyzsh"
 ZSH_CUSTOM="$ZSH/custom"
-ZSH_CACHE_DIR="$ZDOTDIR/cache"
-plugins=(themes web-search command-not-found copybuffer colored-man-pages)
-ZSH_THEME=nanotechx
-ZSH_THEME_RANDOM_CANDIDATES=( adbenx agnosterx avitx fino-timex foxx jonathanx nanotechx rkj-reposx robbyrussellx )
-DEFAULT_USER=eric
+ZSH_CACHE_DIR="$ZSH/cache"
+ZSH_THEME=nanotechx  
+ZSH_THEME_RANDOM_CANDIDATES=( agnosterx avitx fino-timex foxx jonathanx nanotechx rkj-reposx robbyrussellx )
 
-# Source the Bazzite MOTD script
-test -f /etc/profile.d/user-motd.sh && source /etc/profile.d/user-motd.sh
-echo # <-- THIS LINE ADDS THE BLANK SPACE
+mkdir -p "$ZSH_CACHE_DIR"
 
-# ────── HOST-ONLY SCRIPTS ──────
-# Use this check to *only* run host-specific (Bazzite) scripts
-# when we are NOT inside a distrobox container.
-if [ -z "$CONTAINER_ID" ]; then
+# OMZ Plugins
+plugins=(themes web-search command-not-found copybuffer colored-man-pages git)
 
-  # LOAD SYSTEM-WIDE SCRIPTS (FOR UJUST, ETC.)
-  # Zsh doesn't read /etc/profile.d by default, so we do it here.
-  if [ -d /etc/profile.d ]; then
-    for i in /etc/profile.d/*.sh; do
-      if [ -r "$i" ]; then
-        . "$i"
-      fi
-    done
-    unset i
-  fi
-fi
-
-# ────── CONTAINER-ONLY SCRIPTS ──────
-if [ -n "$CONTAINER_ID" ]; then
-  # This fixes the 'append_path' error *inside* Arch
-  # Source this *before* OMZ to define functions
-  source /etc/profile
-fi
 
 # ────── OH-MY-ZSH ──────
 source $ZSH/oh-my-zsh.sh
 
 # ────── POST-OMZ TWEAKS ──────
-# --------------------------------------------------------------------
-# This is the "best practice" for adding context to OMZ themes.
-# We redefine the 'prompt_context' function that themes use.
 # This inserts the container ID *inside* the theme's formatting.
 # 1. First, check if the theme even defined this function
 if (( ${+functions[prompt_context]} )); then
@@ -85,4 +59,12 @@ compinit
 # Shell-specific inits
 [ "$(command -v atuin)" ] && eval "$(atuin init zsh)"
 [ "$(command -v zoxide)" ] && eval "$(zoxide init zsh)"
+if [ "$(command -v fzf)" ]; then
+    source <(fzf --zsh)
+    export FZF_BASE=/usr/share/fzf
+    export FZF_DEFAULT_COMMAND='fd --type f'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    export FZF_ALT_C_COMMAND='fd --type d'
+fi
 
+echo # <-- THIS LINE ADDS THE BLANK SPACE

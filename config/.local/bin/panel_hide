@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# 1. Define the correct qdbus command for Fedora Plasma 6
+# It is usually 'qdbus6' or 'qdbus-qt6'. If those fail, try plain 'qdbus'.
+QDBUS_CMD="qdbus6"
+
+# Check if qdbus6 exists, otherwise fall back to qdbus-qt6 or qdbus
+if ! command -v $QDBUS_CMD &>/dev/null; then
+  if command -v qdbus-qt6 &>/dev/null; then
+    QDBUS_CMD="qdbus-qt6"
+  else
+    QDBUS_CMD="qdbus"
+  fi
+fi
+
+# 2. Set your Panel ID here (Replace '0' with the ID you found in Step 1)
+PANEL_ID=$($QDBUS_CMD org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "print(panelIds[0])")
+
+# 3. Get current state
+CURRENT_STATE=$($QDBUS_CMD org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "var panel = panelById($PANEL_ID); print(panel.hiding);")
+
+# 4. Toggle
+if [ "$CURRENT_STATE" == "autohide" ]; then
+  $QDBUS_CMD org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "var panel = panelById($PANEL_ID); panel.hiding = 'none';"
+else
+  $QDBUS_CMD org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "var panel = panelById($PANEL_ID); panel.hiding = 'autohide';"
+fi
